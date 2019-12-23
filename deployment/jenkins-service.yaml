@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  #namespace: guineeapps
+spec:
+  type: NodePort
+  ports:
+    - name: ui
+      port: 8080
+      targetPort: 8080
+    - name: jnlp
+      port: 50000
+      targetPort: 50000
+  selector:
+    app: jenkins
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins
+  #namespace: guineeapps
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: build.rougeo.lan
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jenkins
+          servicePort: 8080
+      - path: /jnlp
+        backend:
+          serviceName: jenkins
+          servicePort: 50000

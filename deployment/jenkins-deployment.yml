@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+  #namespace: guineeapps
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          #env:
+          #  - name: JAVA_OPTS
+          #    value: -Djenkins.install.runSetupWizard=false
+          resources:
+            requests:
+              memory: "4G"
+              cpu: "2000m"
+            limits:
+              memory: "6G"
+              cpu: "3000m"
+          ports:
+            - name: http-port
+              containerPort: 8080
+            - name: jnlp-port
+              containerPort: 50000
+          volumeMounts:
+            - name: jenkins-pv-volume
+              mountPath: /var/jenkins_home
+      volumes:
+        - name: jenkins-pv-volume
+          persistentVolumeClaim:
+            claimName: task-pv-claim
