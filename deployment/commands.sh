@@ -8,3 +8,8 @@ clusterrolebinding.rbac.authorization.k8s.io/serviceaccounts-cluster-admin creat
 # Show with yml format 
 
  kubectl get pod jenkins-5dc5c8cf98-clwfj -o yaml
+
+# kubernetes monitoring tool
+ octant # terminal: brew install octant
+
+ lens # Desktop tool
