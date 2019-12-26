@@ -1,37 +1,38 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: jenkins
-  #namespace: guineeapps
+  name: nexus
+  namespace: guineeapps
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: jenkins
+        app: nexus
     spec:
       containers:
-        - name: jenkins
-          image: jenkins/jenkins:lts
+        - name: nexus
+          image: sonatype/nexus3
+          imagePullPolicy: Always
           #env:
           #  - name: JAVA_OPTS
           #    value: -Djenkins.install.runSetupWizard=false
           # resources:
           #   requests:
           #     memory: "4G"
-          #     cpu: "2000m"
+          #     cpu: "1000m"
           #   limits:
           #     memory: "6G"
-          #     cpu: "3000m"
+          #     cpu: "2000m"
           ports:
             - name: http-port
-              containerPort: 8080
-            - name: jnlp-port
-              containerPort: 50000
+              containerPort: 8081
+            - name: docker-port
+              containerPort: 5000
           volumeMounts:
-            - name: jenkins-pv-volume
-              mountPath: /var/jenkins_home
+            - name: nexus-pv-volume
+              mountPath: /nexus-data
       volumes:
-        - name: jenkins-pv-volume
+        - name: nexus-pv-volume
           persistentVolumeClaim:
-            claimName: jenkins-pv-claim
+            claimName: nexus-pv-claim
