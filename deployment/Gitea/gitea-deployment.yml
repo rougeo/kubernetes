@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gitea
+  namespace: guineeapps
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      containers:
+        - name: gitea
+          image: gitea/gitea
+          imagePullPolicy: Always
+          #env:
+          #  - name: JAVA_OPTS
+          #    value: -Djenkins.install.runSetupWizard=false
+          # resources:
+          #   requests:
+          #     memory: "4G"
+          #     cpu: "1000m"
+          #   limits:
+          #     memory: "6G"
+          #     cpu: "2000m"
+          ports:
+            - name: http-port
+              containerPort: 3000
+          volumeMounts:
+            - name: gitea-pv-volume
+              mountPath: /data
+      volumes:
+        - name: gitea-pv-volume
+          persistentVolumeClaim:
+            claimName: gitea-pv-claim
