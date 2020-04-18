@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: jenkins-pv-volume
-  #namespace: guineeapps
+  namespace: guineeapps
   labels:
     type: local
 spec:
@@ -19,7 +19,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jenkins-pv-claim
-  #namespace: default
+  namespace: guineeapps
 spec:
   storageClassName: manual
   accessModes:
