@@ -1,0 +1,96 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  creationTimestamp: null
+  name: samples-test-images-git
+spec:
+  params:
+  - name: revision
+    value: master
+  - name: url
+    value: github.com/triggermesh/aktion
+  type: git
+status: {}
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  creationTimestamp: null
+  name: samples-test-images-image
+spec:
+  params:
+  - name: url
+  value: knative.registry.svc.cluster.local/samples-test-images-image
+  type: image
+status: {}
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  creationTimestamp: null
+  name: build-samples-test-images
+spec:
+  inputs:
+    params:
+    - default: Dockerfile
+      name: pathToDockerFile
+    - name: pathToContext
+    resources:
+    - name: workspace
+      targetPath: ""
+      type: git
+  outputs:
+  resources:
+  - name: image
+    targetPath: ""
+    type: image
+  steps:
+  - args:
+  - --dockerfile=${inputs.params.pathToDockerFile}
+  - --destination=${outputs.resources.image.url}
+  - --context=${inputs.params.pathToContext}
+  - --insecure
+  - --insecure-registry
+  - --verbosity=debug
+  command:
+    - /kaniko/executor
+  image: gcr.io/kaniko-project/executor
+  name: build-and-push-samples-test-images
+resources: {}
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  creationTimestamp: null
+  name: local-repo-test
+spec:
+  params:
+  - name: revision
+    value: master
+  - name: url
+  value: github.com/triggermesh/aktion
+  type: git
+status: {}
+
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  creationTimestamp: null
+  name: local-repo-test
+spec:
+  inputs:
+  resources:
+  - name: local-repo-test
+    targetPath: ""
+  type: git
+  steps:
+  - args:
+  - Hello
+  - world
+  command:
+  - echo
+  image: knative.registry.svc.cluster.local/samples-test-images-image
+  name: first-action
+resources: {}

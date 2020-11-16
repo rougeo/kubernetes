@@ -12,7 +12,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/Users/boubaca/Desktop/kubernetes/volumes/jenkins_data"
+    path: "/Users/boubacar/Desktop/kubernetes/volumes/jenkins_data"
 
 ---
 apiVersion: v1
