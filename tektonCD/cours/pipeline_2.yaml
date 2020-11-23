@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task-with-input
+  namespace: default
+spec:
+  resources:
+    inputs:
+      - name: go-example-git
+        type: git
+        targetPath: go/src/github.com/tektoncd/pipeline
+  steps:
+    # - name: unit-tests
+    #   image: golang
+    #   command: ["go"]
+    #   args:
+    #     - "test"
+    #     - "./..."
+    #   workingDir: "/workspace/go/src/github.com/tektoncd/pipeline"
+    #   env:
+    #     - name: GOPATH
+    #       value: /workspace/go
+    - name: sum
+      image: bash:latest
+      script: |
+        #!/usr/bin/env bash
+        ls -al go/src/github.com/tektoncd/pipeline
+        pwd
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:v0.17.1
+      # specifying DOCKER_CONFIG is required to allow kaniko to detect docker credential
+      workingDir: "/workspace/go/src/github.com/tektoncd/pipeline"
+      env:
+        - name: "DOCKER_CONFIG"
+          value: "/tekton/home/.docker/"
+      command:
+        - /kaniko/executor
+      args:
+         - --no-push
+      #   - --dockerfile=go/src/github.com/tektoncd/pipeline/DockerFile
+      #   - --destination=/workspace
+      #   - --context=go/src/github.com/tektoncd/pipeline
