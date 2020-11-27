@@ -1,0 +1,97 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamePassword:
+          password: "credentials"
+          scope: GLOBAL
+          username: "testcred"
+jenkins:
+  systemMessage: "<h2 style=\"text-align:center\">JENKINS</h2>"
+  markupFormatter:
+    rawHtml:
+      disableSyntaxHighlighting: false
+  agentProtocols:
+    - "JNLP4-connect"
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Read:anonymous"
+        - "Overall/Administer:authenticated"
+        - "Metrics/HealthCheck:authenticated"
+        - "Metrics/ThreadDump:authenticated"
+        - "Metrics/View:anonymous"
+        - "Metrics/View:authenticated"
+  globalNodeProperties:
+  - envVars:
+      env:
+      - key: test
+        value: test
+        
+  clouds:
+  - kubernetes:
+      connectTimeout: 5
+      containerCapStr: "10"
+      credentialsId: "my-k8s-token"
+      serverUrl: "https://k8s.api.example.com"
+      skipTlsVerify: true
+      jenkinsUrl: "https://jenkins.example.com/jenkins"
+      maxRequestsPerHostStr: "32"
+      name: "kubernetes"
+      readTimeout: 15
+      templates:
+      - containers:
+        - args: "^${computer.jnlpmac} ^${computer.name}"
+          image: "registry.access.redhat.com/openshift3/jenkins-slave-maven-rhel7"
+          livenessProbe:
+            failureThreshold: 0
+            initialDelaySeconds: 0
+            periodSeconds: 0
+            successThreshold: 0
+            timeoutSeconds: 0
+          name: "jnlp"
+          workingDir: "/tmp"
+        hostNetwork: false
+        label: "maven"
+        name: "maven"
+        workspaceVolume:
+          emptyDirWorkspaceVolume:
+            memory: false
+        yamlMergeStrategy: "override"
+      - containers:
+        - args: "^${computer.jnlpmac} ^${computer.name}"
+          image: "registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7"
+          livenessProbe:
+            failureThreshold: 0
+            initialDelaySeconds: 0
+            periodSeconds: 0
+            successThreshold: 0
+            timeoutSeconds: 0
+          name: "jnlp"
+          workingDir: "/tmp"
+        hostNetwork: false
+        label: "nodejs"
+        name: "nodejs"
+        workspaceVolume:
+          emptyDirWorkspaceVolume:
+            memory: false
+        yamlMergeStrategy: "override"
+unclassified:
+  prometheusConfiguration:
+    collectingMetricsPeriodInSeconds: 120
+    countAbortedBuilds: true
+    countFailedBuilds: true
+    countNotBuiltBuilds: true
+    countSuccessfulBuilds: true
+    countUnstableBuilds: true
+    defaultNamespace: "default"
+    fetchTestResults: true
+    jobAttributeName: "jenkins_job"
+    path: "prometheus"
+    processingDisabledBuilds: false
+    useAuthenticatedEndpoint: false
+tool:
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
