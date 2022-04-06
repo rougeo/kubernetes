@@ -1,8 +1,21 @@
+####
+# Namespace
+####
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: guineeapps
+
+####
+# Deployment
+####
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo-app
-  # namespace: guineeapps
+  namespace: guineeapps
 spec:
   replicas: 1
   selector:
@@ -17,33 +30,19 @@ spec:
         - name: demo-app
           image: nginx
           imagePullPolicy: Always
-          #env:
-          #  - name: JAVA_OPTS
-          #    value: -Djenkins.install.runSetupWizard=false
-          # resources:
-          #   requests:
-          #     memory: "4G"
-          #     cpu: "1000m"
-          #   limits:
-          #     memory: "6G"
-          #     cpu: "2000m"
           ports:
             - name: http
               containerPort: 80
-      #     volumeMounts:
-      #       - name: demo-app-pv-volume
-      #         mountPath: /data
-      # volumes:
-      #   - name: demo-app-pv-volume
-      #     persistentVolumeClaim:
-      #       claimName: demo-app-pv-claim
 
+####
+# Service
+####
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: demo-app-service
-  # namespace: guineeapps
+  namespace: guineeapps
 spec:
   type: NodePort
   ports:
@@ -51,15 +50,19 @@ spec:
       port: 80
       targetPort: 80 # port of the container
       protocol: TCP
-      nodePort: 31000
+      nodePort: 30001
   selector:
     app: demo-app
+
+####
+# Ingress
+####
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-
 metadata:
   name: demo-app-ingress  
+  namespace: guineeapps
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
