@@ -1,15 +1,37 @@
-####
-# Namespace
-####
+#############
+# Namespace #
+############
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: guineeapps
 
-####
-# Deployment
-####
+############
+# ConfigMap #
+############
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-app
+  namespace: guineeapps
+data:
+  author: "Diallo-Boubacar"
+  project: "kubernetes-tutorial"
+  project.conf: |
+    country=France
+    city=Paris
+    code=+33
+
+
+########
+# Secret #
+########
+
+#############
+# Deployment #
+#############
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -28,15 +50,39 @@ spec:
     spec:
       containers:
         - name: demo-app
-          image: nginx
+          image: kbosow/docs-soowcode:dev
           imagePullPolicy: Always
+          env:
+            - name: AUTHOR
+              valueFrom:
+                configMapKeyRef:
+                  name: demo-app
+                  key: author
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: demo-app-config
+              mountPath: "/config"
+              readOnly: true
+      volumes:
+        - name: demo-app-config
+          configMap:
+            name: demo-app
+            items:
+              - key: "project.conf"
+                path: "in-project.conf"
 
-####
-# Service
-####
+#########
+# Service #
+#########
 ---
 apiVersion: v1
 kind: Service
@@ -44,37 +90,37 @@ metadata:
   name: demo-app-service
   namespace: guineeapps
 spec:
-  type: NodePort
+  # type: NodePort
   ports:
     - name: http
       port: 80
-      targetPort: 80 # port of the container
+      targetPort: 8000 # port of the container
       protocol: TCP
-      nodePort: 30001
+      # nodePort: 30001
   selector:
     app: demo-app
 
-####
-# Ingress
-####
+#########
+# Ingress #
+########
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: demo-app-ingress  
+  name: demo-app-ingress
   namespace: guineeapps
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  # annotations:
+  #   nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
-  ingressClassName: nginx
+  ingressClassName: contour
   rules:
-  - host: gitea.rougeo.lan
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: demo-app-service
-            port:
-              number: 80
+    - host: demo-app.rougeo.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-app-service
+                port:
+                  number: 80
