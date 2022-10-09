@@ -1,0 +1,16 @@
+############
+# ConfigMap #
+############
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-red-app
+  namespace: node-red
+data:
+  author: "Diallo-Boubacar"
+  project: "kubernetes-tutorial"
+  project.conf: |
+    country=France
+    city=Paris
+    code=+33

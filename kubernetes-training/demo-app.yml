@@ -1,11 +1,49 @@
 #############
 # Namespace #
-############
+#############
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: guineeapps
+
+############################
+# Volumes PersistentVolume #
+############################
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+  labels:
+    type: nfs-pv
+spec:
+  storageClassName: rougeo-nfs
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 157.230.67.35
+    path: "/"
+    readOnly: false
+
+#################################
+# Volumes PersistentVolumeClaim #
+#################################
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs
+  namespace: guineeapps
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: rougeo-nfs
+  resources:
+    requests:
+      storage: 2Gi
 
 ############
 # ConfigMap #
@@ -25,13 +63,9 @@ data:
     code=+33
 
 
-########
-# Secret #
-########
-
-#############
+##############
 # Deployment #
-#############
+##############
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,6 +106,8 @@ spec:
             - name: demo-app-config
               mountPath: "/config"
               readOnly: true
+            - name: my-pvc-nfs
+              mountPath: "/mnt"
       volumes:
         - name: demo-app-config
           configMap:
@@ -79,10 +115,13 @@ spec:
             items:
               - key: "project.conf"
                 path: "in-project.conf"
+        - name: my-pvc-nfs
+          persistentVolumeClaim:
+            claimName: nfs
 
-#########
+###########
 # Service #
-#########
+###########
 ---
 apiVersion: v1
 kind: Service
@@ -90,27 +129,25 @@ metadata:
   name: demo-app-service
   namespace: guineeapps
 spec:
-  # type: NodePort
+  type: NodePort
   ports:
     - name: http
-      port: 80
-      targetPort: 8000 # port of the container
+      port: 80 # port(number) of the service
+      targetPort: http # port (number or associated name) of the container
       protocol: TCP
-      # nodePort: 30001
+      nodePort: 30001
   selector:
     app: demo-app
 
-#########
+###########
 # Ingress #
-########
+###########
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: demo-app-ingress
   namespace: guineeapps
-  # annotations:
-  #   nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: contour
   rules:

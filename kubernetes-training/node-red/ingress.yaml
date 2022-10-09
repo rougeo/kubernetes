@@ -1,0 +1,22 @@
+#########
+# Ingress #
+########
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-red-app-ingress
+  namespace: node-red
+spec:
+  ingressClassName: contour
+  rules:
+    - host: node-red.rougeo.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: node-red-app-service
+                port:
+                  number: 80

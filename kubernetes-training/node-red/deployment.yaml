@@ -1,0 +1,55 @@
+#############
+# Deployment #
+#############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-red-app
+  namespace: node-red
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-red-app
+  template:
+    metadata:
+      labels:
+        app: node-red-app
+    spec:
+      containers:
+        - name: node-red-app
+          image: nodered/node-red
+          imagePullPolicy: Always
+          env:
+            - name: AUTHOR
+              valueFrom:
+                configMapKeyRef:
+                  name: node-red-app
+                  key: author
+          ports:
+            - name: http
+              containerPort: 1880
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: node-red-app-config
+              mountPath: "/config"
+              readOnly: true
+            - name: my-pvc-nfs
+              mountPath: "/mnt"
+      volumes:
+        - name: node-red-app-config
+          configMap:
+            name: node-red-app
+            items:
+              - key: "project.conf"
+                path: "in-project.conf"
+        - name: my-pvc-nfs
+          persistentVolumeClaim:
+            claimName: nfs

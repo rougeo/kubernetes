@@ -1,0 +1,19 @@
+#########
+# Service #
+#########
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-red-app-service
+  namespace: node-red
+spec:
+  # type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 1880 # port of the container
+      protocol: TCP
+      # nodePort: 30001
+  selector:
+    app: node-red-app

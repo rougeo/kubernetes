@@ -1,0 +1,83 @@
+#############
+# Namespace #
+############
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: soowcode
+
+#############
+# Deployment #
+#############
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: soowcode
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+        - name: demo-app-nginx
+          image: kbosow/docs-soowcode:dev
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+
+#########
+# Service #
+#########
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app-service
+  namespace: soowcode
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8000 # port of the container
+      protocol: TCP
+  selector:
+    app: demo-app
+
+###########
+# Ingress #
+###########
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-app-ingress
+  namespace: soowcode
+spec:
+  ingressClassName: contour
+  rules:
+    - host: demo-app.rougeo.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-app-service
+                port:
+                  number: 8080
