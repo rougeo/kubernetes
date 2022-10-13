@@ -68,6 +68,20 @@ data:
     code=+33
 
 
+############
+# Secret #
+############
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-app-secret
+  namespace: guineeapps
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+
 ##############
 # Deployment #
 ##############
