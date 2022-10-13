@@ -1,3 +1,8 @@
+##########################################################################
+### Install the Contour Ingress:                                       ###
+### kubectl apply -f https://projectcontour.io/quickstart/contour.yaml ###
+##########################################################################
+
 #############
 # Namespace #
 #############
@@ -73,7 +78,7 @@ metadata:
   name: demo-app
   namespace: guineeapps
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: demo-app
@@ -106,8 +111,9 @@ spec:
             - name: demo-app-config
               mountPath: "/config"
               readOnly: true
-            - name: my-pvc-nfs
+            - name: nfs-volume
               mountPath: "/mnt"
+              subPath: "demo-app"
       volumes:
         - name: demo-app-config
           configMap:
@@ -115,7 +121,7 @@ spec:
             items:
               - key: "project.conf"
                 path: "in-project.conf"
-        - name: my-pvc-nfs
+        - name: nfs-volume
           persistentVolumeClaim:
             claimName: nfs
 
@@ -161,3 +167,22 @@ spec:
                 name: demo-app-service
                 port:
                   number: 80
+
+#####################
+# Ingress HTTPProxy #
+#####################
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: demo-app-http-proxy
+  namespace: guineeapps
+spec:
+  virtualhost:
+    fqdn: web1.sg.com
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: demo-app-service
+          port: 80
